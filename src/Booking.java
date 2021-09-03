@@ -12,7 +12,11 @@ import java.util.Scanner;
 
 public class Booking {
 
+    private static DBConnection bookingDb;
+
     public static void main(String[] args) {
+
+        bookingDb = new DBConnection();
 
         //1. Owner side (what he can do - add, delete tables/seats, delete booking). 3 options
         //2. User side ( to book a table; to see reservations according to specific date and time) 2. options
@@ -66,13 +70,18 @@ public class Booking {
                                 case 2:
                                     // add a table
                                     //db+array
+
+
+
                                     numberOfTables++;
                                     System.out.println("Please add number of seats for the table :");
                                     newTable.setNumberOfSeats(scanner.nextInt());
                                     newTable.setTableID(numberOfTables);
                                     ArrayList<Reservation> reservationsForTable = new ArrayList<>();
                                     newTable.setReservationForTable(reservationsForTable);
-                                    listOfTables.add(newTable);
+                                    //ListOfTables.add(newTable);
+
+                                    bookingDb.createTable(newTable);
                                     break;
                                 case 3:
                                     //delete a table
