@@ -1,4 +1,18 @@
-//new
+//09/05 what was done: added 2 more tables: person and reservation ,
+//added methods- create person and create table that adds a row to db table from class in JAVA
+//
+//
+
+
+//check if no tables in DB - sout the message
+//check the booking time from 11:00 - 23:00
+//finished 200 -create person- need to add reservation id after the reservation is completed
+
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -33,7 +47,7 @@ public class Booking {
 
         int menuEntry;
         Scanner scanner = new Scanner(System.in);
-        int numberOfTables= 0;//for add and remove functions - table id, that will be incremented every time when adding new tablw
+        int numberOfTables = 0;//for add and remove functions - table id, that will be incremented every time when adding new tablw
         int numberOfReservations = 0; // the same for reservations
         do {
             // EXIT == 0
@@ -50,9 +64,9 @@ public class Booking {
                     int pin;
                     System.out.println("Please enter your pin code XXXX (0000):");
                     pin = scanner.nextInt();
-                    if (pin == 0000 ){
+                    if (pin == 0000) {
                         int entry;
-                        do{
+                        do {
                             System.out.println("Please select :");
                             System.out.println("1 - Show the list of tables ");
                             System.out.println("2 - Add a table ");
@@ -61,38 +75,38 @@ public class Booking {
                             System.out.println("0 - Exit");
                             Tables newTable = new Tables();
                             entry = scanner.nextInt();
-                            switch (entry){
+                            switch (entry) {
                                 case 1://show the list of tables - db
-                                    for (Tables tab: listOfTables){
+                                    bookingDb.getTables();
+                                    /*for (Tables tab: listOfTables){
                                         System.out.println(tab.toString());
-                                    }
+                                    }*/
                                     break;
                                 case 2:
                                     // add a table
                                     //db+array
 
-
-
                                     numberOfTables++;
                                     System.out.println("Please add number of seats for the table :");
                                     newTable.setNumberOfSeats(scanner.nextInt());
-                                    newTable.setTableID(numberOfTables);
-                                    ArrayList<Reservation> reservationsForTable = new ArrayList<>();
-                                    newTable.setReservationForTable(reservationsForTable);
-                                    //ListOfTables.add(newTable);
+                                    //newTable.setTableID(numberOfTables);
+                                    //ArrayList<Reservation> reservationsForTable = new ArrayList<>();
+                                    //newTable.setReservationForTable(reservationsForTable);
+                                    //listOfTables.add(newTable);
 
                                     bookingDb.createTable(newTable);
                                     break;
-                                case 3:
+                                case 3: //check if there are no reservations for the table
                                     //delete a table
                                     //should be deleted from DB and from array
                                     System.out.println("Please write ID of the table to be deleted:");
                                     int numberToDelete = scanner.nextInt();
-                                    for (int i = 0;i<listOfTables.size(); i ++){
+                                    /*for (int i = 0;i<listOfTables.size(); i ++){
                                         if (listOfTables.get(i).getTableID() == numberToDelete){
                                             listOfTables.remove(i);
                                         }
-                                    }
+                                    }*/
+                                    bookingDb.deleteTable(numberToDelete);
                                     break;
                                 case 4: //from db
                                     String targetDate;
@@ -105,11 +119,16 @@ public class Booking {
                                     System.out.println("Irrelevant data was cleaned!");
                                     break;
                                 default:
-                                    System.out.println("Menu item does not exist");
+                                    if(entry == 0){
+                                        continue;
+                                    }
+                                    else {
+                                        System.out.println("Menu item does not exist");
+                                        System.out.println();
+                                    }
                             }
-                        }while (entry != 0);
-                    }
-                    else{
+                        } while (entry != 0);
+                    } else {
                         System.out.println("The pin is incorrect");
                         System.out.println();
                         break;
@@ -130,79 +149,103 @@ public class Booking {
                                 //COMPLICATED, SHOULD BE DONE IN DATABASE , NOT CHANGING ANYTHING JUST PRINTING OUT
                                 //see available tables
                                 // entering data - number of persons
-                                String date = null;
-                                //String time= null;
-                                int numberOfPersons= 0;
-                                int reservationHours =0;
+                                String date = null; //maybe to move to case 2?
+                                String time = null; // maybe to move to case 2?
+                                int numberOfPersons = 0;
+                                int reservationHours = 0;
                                 // System.out.println("Please select a date in format YYYY-MM-DD :");
                                 //date = scanner.next();
                                 /*System.out.println("Please select a time in format HH:MM :");
                                 time = scanner.next();*/
-                                System.out.println("How many persons you are: ");
+                                System.out.println("How many persons are you : ");
                                 numberOfPersons = scanner.nextInt();
                                 //System.out.println("How many hours do you want your reservation to last? ");
                                 //reservationHours = scanner.nextInt();
                                 //LocalDate newDate = LocalDate.parse(date);
                                 //System.out.println("the new date is " + newDate); check that parse is working
-                                for (int i =0; i< listOfTables.size(); i++){ //prints out tables details in which number of seats >= number of persons
+                                /*for (int i =0; i< listOfTables.size(); i++){ //prints out tables details in which number of seats >= number of persons
                                     if (listOfTables.get(i).getNumberOfSeats() >=numberOfPersons){
-                                        /*//reservations for the date
+                                        //reservations for the date
                                             for(Reservation res : listOfTables.get(i).getReservationForTable()){//reservations for specific table
                                                 if(res.getDate().equals(newDate)){
                                                     System.out.println(listOfTables.get(i).getReservationForTable());//print out the data for this table
                                                 }
-                                            }*/
+                                            }
 
                                         System.out.println(listOfTables.get(i));//prints tables with more or equal number of seats but
                                         // should print out all reservations for those tables with the specific date
                                     }
-                                }
-
+                                }*/
+                                bookingDb.getAvailableTables(numberOfPersons);
                                 break;
                             case 2:
                                 //book a table - change db, arrays
-
                                 numberOfReservations++;
-                                System.out.println("Please enter your name: ");
+                                System.out.println("Please enter your name: "); //  check that its a name - a-zA-Z
                                 String name = scanner.next();
-                                System.out.println("How many persons you are: ");
-                                numberOfPersons = scanner.nextInt();
-                                System.out.println("Please enter your phone number: ");//empty line??????
+                                System.out.println("How many persons you are: "); //check that its a positive number, not 0
+                                //numberOfPersons = scanner.nextInt();
+                                numberOfPersons=0;
+                                numberOfPersons = checkInputInt(numberOfPersons);
+                                System.out.println("Please enter your phone number: ");//empty line??????//check that it matches [0-9]*
                                 String phoneNumber = scanner.next();
-                                System.out.println("Please select a date in format YYYY-MM-DD :");
+                                System.out.println("Please select a date in format YYYY-MM-DD :");//check the format is correct
                                 date = scanner.next();
-                                System.out.println("Please select a time in format HH:MM :");
-                                String time = scanner.next();
-                                System.out.println("How many hours do you want your reservation to last? ");
+                                System.out.println("Please select a time in format HH:MM :"); //check the format is correct, time more than 11:00 and less than 23:00
+                                time = scanner.next();
+                                System.out.println("How many hours do you want your reservation to last? ");//check the input ans that time plus hours not more than 23:00,
                                 reservationHours = scanner.nextInt();
-                                System.out.println("Please enter the table id, of the table you've chosen: ");
+                                System.out.println("Please enter the table id, of the table you've chosen: ");//an option to check available tables for the specific time
                                 int tableId = scanner.nextInt();
-
                                 LocalDate newDate = LocalDate.parse(date);
                                 LocalTime newTime = LocalTime.parse(time);
 
+
                                 // add a reservation to a table id
-                                Person newPerson = new Person();
-                                for (int i = 0; i<listOfTables.size();i++){
-                                    if (listOfTables.get(i).getTableID() == tableId){
-                                        Reservation newReservation = new Reservation(numberOfReservations, newDate , newTime , reservationHours, tableId );//reservation done
-                                        //adding reservation to table
-                                        listOfTables.get(i).addNewReservation(newReservation);
-                                        //create a person
-                                        newPerson = new Person( name, phoneNumber, numberOfPersons, tableId, numberOfReservations);
-                                    }
-                                }
-                                System.out.println(newPerson + "is a new person");
+                                Person newPerson = new Person(); //creating a person that will be transferred to db
+                                newPerson.setName(name);
+                                newPerson.setTelephoneNumber(phoneNumber);
+                                newPerson.setTableID(tableId);
+                                newPerson.setNumberOfPersons(numberOfPersons);
+
+                                bookingDb.createPerson(newPerson);
+
+                                //add reservation
+                                Reservation newReservation = new Reservation();
+                                newReservation.setDate(newDate);
+                                newReservation.setTime(newTime);
+                                newReservation.setReservationHours(reservationHours);
+                                newReservation.setTableID(tableId);
+                                newReservation.setPersonTelephoneNumber(phoneNumber);
+
+                                bookingDb.createReservation(newReservation);
                                 break;
                             default:
                         }
-                    }while (userEntry != 0);
+                    } while (userEntry != 0);
                     break;
                 default:
-                    if(menuEntry != 0){// to check that the first input is not 0 - do while loop)
-                        System.out.println("Menu item does not exist");
-                    }
+                    /*if (menuEntry != 0) {// to check that the first input is not 0 - do while loop)
+                        System.out.println("Menu item does not exist"); //prints when not needed- check
+                    }*/
+                    System.out.println("Menu item does not exist");
             }
         } while (menuEntry != 0);
+    }
+
+
+    private static int checkInputInt(int check1) { //to check for 0 and positive
+        Scanner sc = new Scanner(System.in);
+        String check0;
+        check1 = 0;
+        do {
+            check0 = sc.next();
+            if (check0.matches("\\d+")) {
+                check1 = Integer.parseInt(check0);
+            } else {
+                System.out.println("Input is not recognized, enter a number: ");
+            }
+        } while (!(check0.matches("\\d+")));
+        return check1;
     }
 }

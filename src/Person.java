@@ -1,35 +1,41 @@
 public class Person {
-    //private int ID;
+    private int ID;
     private String name;
     private String telephoneNumber;
     private int numberOfPersons;
     private int tableID;
-    private int reservationID;
+
 
     public Person() {
     }
 
-    public Person(String name, String telephoneNumber, int numberOfPersons, int tableID, int reservationID) {
-        //this.ID = ID;
+    public Person(int ID, String name, String telephoneNumber, int numberOfPersons, int tableID) {
+        this.ID = ID;
         this.name = name;
         this.telephoneNumber = telephoneNumber;
         this.numberOfPersons = numberOfPersons;
         this.tableID = tableID;
-        this.reservationID = reservationID;
+
     }
 
     @Override
     public String toString() {
         return "Person{" +
-
+                "ID=" + ID +
                 ", name='" + name + '\'' +
                 ", telephoneNumber='" + telephoneNumber + '\'' +
                 ", numberOfPersons=" + numberOfPersons +
                 ", tableID=" + tableID +
-                ", reservationID=" + reservationID +
                 '}';
     }
 
+    public int getID() {
+        return ID;
+    }
+
+    public void setID(int ID) {
+        this.ID = ID;
+    }
 
     public String getName() {
         return name;
@@ -63,11 +69,4 @@ public class Person {
         this.tableID = tableID;
     }
 
-    public int getReservationID() {
-        return reservationID;
-    }
-
-    public void setReservationID(int reservationID) {
-        this.reservationID = reservationID;
-    }
 }
