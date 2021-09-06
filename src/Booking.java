@@ -1,12 +1,12 @@
 //09/05 what was done: added 2 more tables: person and reservation ,
 //added methods- create person and create table that adds a row to db table from class in JAVA
-//
+//if the number of people is too big sout - no such a big table
 //
 
 
 //check if no tables in DB - sout the message
 //check the booking time from 11:00 - 23:00
-//finished 200 -create person- need to add reservation id after the reservation is completed
+
 
 
 import java.sql.Connection;
@@ -98,17 +98,12 @@ public class Booking {
                                     break;
                                 case 3: //check if there are no reservations for the table
                                     //delete a table
-                                    //should be deleted from DB and from array
                                     System.out.println("Please write ID of the table to be deleted:");
                                     int numberToDelete = scanner.nextInt();
-                                    /*for (int i = 0;i<listOfTables.size(); i ++){
-                                        if (listOfTables.get(i).getTableID() == numberToDelete){
-                                            listOfTables.remove(i);
-                                        }
-                                    }*/
+
                                     bookingDb.deleteTable(numberToDelete);
                                     break;
-                                case 4: //from db
+                                case 4: // may be we dont need this item at all
                                     String targetDate;
                                     System.out.println("Please enter the target date . Up to which all the data will be delete in format YYYY-MM-DD: ");
                                     targetDate = scanner.next();
@@ -153,12 +148,18 @@ public class Booking {
                                 String time = null; // maybe to move to case 2?
                                 int numberOfPersons = 0;
                                 int reservationHours = 0;
-                                // System.out.println("Please select a date in format YYYY-MM-DD :");
-                                //date = scanner.next();
+                                System.out.println("Please select a date in format YYYY-MM-DD :");
+                                date = scanner.next();
+                                //to check for the date input
+                                //LocalDate newDate = null;
+
+
                                 /*System.out.println("Please select a time in format HH:MM :");
                                 time = scanner.next();*/
                                 System.out.println("How many persons are you : ");
-                                numberOfPersons = scanner.nextInt();
+                                //numberOfPersons = scanner.nextInt();
+                                numberOfPersons=0;
+                                numberOfPersons = checkInputInt(numberOfPersons);
                                 //System.out.println("How many hours do you want your reservation to last? ");
                                 //reservationHours = scanner.nextInt();
                                 //LocalDate newDate = LocalDate.parse(date);
@@ -176,7 +177,20 @@ public class Booking {
                                         // should print out all reservations for those tables with the specific date
                                     }
                                 }*/
-                                bookingDb.getAvailableTables(numberOfPersons);
+                                ArrayList<Tables> availableTables = new ArrayList<>();
+                                availableTables = bookingDb.getAvailableTables(numberOfPersons);
+                                //System.out.println(availableTables);
+                                int tableId =0;
+                                ArrayList<Reservation> reservationsForTable = new ArrayList<>();
+                                for (Tables table:availableTables){
+                                    tableId = table.getTableID();
+                                    reservationsForTable = bookingDb.getAvailableReservations(tableId, date.toString(), table.getNumberOfSeats());
+                                    if (reservationsForTable.size() == 0){
+                                        System.out.println("Table number " + table.getTableID() + " with " + table.getNumberOfSeats() + " number of seats has no reservations for this date");
+                                    }
+                                }
+
+
                                 break;
                             case 2:
                                 //book a table - change db, arrays
@@ -187,25 +201,28 @@ public class Booking {
                                 //numberOfPersons = scanner.nextInt();
                                 numberOfPersons=0;
                                 numberOfPersons = checkInputInt(numberOfPersons);
-                                System.out.println("Please enter your phone number: ");//empty line??????//check that it matches [0-9]*
-                                String phoneNumber = scanner.next();
+                                System.out.println("Please enter your phone number in format: XXXXXXXX: ");//empty line??????//check that it matches [0-9]*
+                                String phoneNumber = null;
+                                phoneNumber = checkInputPhoneNr(phoneNumber);
                                 System.out.println("Please select a date in format YYYY-MM-DD :");//check the format is correct
                                 date = scanner.next();
+
                                 System.out.println("Please select a time in format HH:MM :"); //check the format is correct, time more than 11:00 and less than 23:00
                                 time = scanner.next();
                                 System.out.println("How many hours do you want your reservation to last? ");//check the input ans that time plus hours not more than 23:00,
                                 reservationHours = scanner.nextInt();
                                 System.out.println("Please enter the table id, of the table you've chosen: ");//an option to check available tables for the specific time
-                                int tableId = scanner.nextInt();
-                                LocalDate newDate = LocalDate.parse(date);
+                                int tableID = scanner.nextInt();
+
                                 LocalTime newTime = LocalTime.parse(time);
+                                LocalDate newDate = LocalDate.parse(date);
 
 
                                 // add a reservation to a table id
                                 Person newPerson = new Person(); //creating a person that will be transferred to db
                                 newPerson.setName(name);
                                 newPerson.setTelephoneNumber(phoneNumber);
-                                newPerson.setTableID(tableId);
+                                newPerson.setTableID(tableID);
                                 newPerson.setNumberOfPersons(numberOfPersons);
 
                                 bookingDb.createPerson(newPerson);
@@ -215,10 +232,11 @@ public class Booking {
                                 newReservation.setDate(newDate);
                                 newReservation.setTime(newTime);
                                 newReservation.setReservationHours(reservationHours);
-                                newReservation.setTableID(tableId);
+                                newReservation.setTableID(tableID);
                                 newReservation.setPersonTelephoneNumber(phoneNumber);
 
                                 bookingDb.createReservation(newReservation);
+                                System.out.println("Your reservation was recorded successfully!");
                                 break;
                             default:
                         }
@@ -234,7 +252,7 @@ public class Booking {
     }
 
 
-    private static int checkInputInt(int check1) { //to check for 0 and positive
+    /*private static int checkInputInt(int check1) { //to check for 0 and positive
         Scanner sc = new Scanner(System.in);
         String check0;
         check1 = 0;
@@ -247,5 +265,33 @@ public class Booking {
             }
         } while (!(check0.matches("\\d+")));
         return check1;
+    }*/
+
+    private static int checkInputInt(int check1) { //to check for 0 and positive
+        Scanner sc = new Scanner(System.in);
+        String check0;
+        check1 = 0;
+        do {
+            check0 = sc.next();
+            if (check0.matches("^[1-9]\\d*$")) {
+                check1 = Integer.parseInt(check0);
+            } else {
+                System.out.println("Input is not recognized, enter a number: ");
+            }
+        } while (!(check0.matches("^[1-9]\\d*$")));
+        return check1;
+    }
+    private static String checkInputPhoneNr(String checkNr1) { //telephone number
+        Scanner sc = new Scanner(System.in);
+        do {
+            checkNr1 = sc.next();
+            if (checkNr1.matches ("^\\d{8}$")) {
+            }
+            else {
+                System.out.println("Input is not recognized, enter 8 numbers: ");
+            }
+        } while (!(checkNr1.matches("^\\d{8}$")));
+        return checkNr1;
     }
 }
+

@@ -1,5 +1,6 @@
 
 import java.sql.*;
+import java.time.LocalTime;
 import java.util.ArrayList;
 
 public class DBConnection {
@@ -10,8 +11,8 @@ public class DBConnection {
     public DBConnection() { //creates 3 tables: tables, persons and reservations
         try {
 
-                String dbUrl = "jdbc:sqlite:bookings.db";
-                conn = DriverManager.getConnection(dbUrl);
+            String dbUrl = "jdbc:sqlite:bookings.db";
+            conn = DriverManager.getConnection(dbUrl);
             if (conn != null) {
                 Statement statement = conn.createStatement();
                 String sqlStatement =
@@ -53,7 +54,7 @@ public class DBConnection {
         }
     }
 
-//TABLE
+    //TABLE
     public void createTable(Tables table) { //adds row to tables in db from Tables(table) -class
 
         try {
@@ -131,7 +132,7 @@ public class DBConnection {
                 table.setTableID(rs.getInt("id"));
                 table.setNumberOfSeats(rs.getInt("number_of_seats"));
                 tableList.add(table);
-                System.out.println(table.toString());
+                //System.out.println(table.toString());
             }
 
         } catch (SQLException exception) {
@@ -141,7 +142,7 @@ public class DBConnection {
         return tableList;
     }
 
-//PERSON
+    //PERSON
     public void createPerson(Person person) { //creates a row in db-persons from Person class
 
         try {
@@ -161,28 +162,60 @@ public class DBConnection {
             System.out.println("Error: " + exception);
         }
     }
-//RESERVATION
-public void createReservation(Reservation reservation) { //creates a row in db-reservations from Person class
+    //RESERVATION
+    public void createReservation(Reservation reservation) { //creates a row in db-reservations from Person class
 
-    try {
+        try {
 
-        Statement statement = conn.createStatement();
-        String sqlStatement = "INSERT INTO reservations (" +
-                "date, time, reservation_duration, table_id, person_phone_number) " +
-                "VALUES (" +
-                "'" + reservation.getDate() + "'," +
-                "'" + reservation.getTime() + "'," +
-                "'" + reservation.getReservationHours() + "'," +
-                "" + reservation.getTableID() + ", " +
-                "'" + reservation.getPersonTelephoneNumber() + "')";
+            Statement statement = conn.createStatement();
+            String sqlStatement = "INSERT INTO reservations (" +
+                    "date, time, reservation_duration, table_id, person_phone_number) " +
+                    "VALUES (" +
+                    "'" + reservation.getDate() + "'," +
+                    "'" + reservation.getTime() + "'," +
+                    "'" + reservation.getReservationHours() + "'," +
+                    "" + reservation.getTableID() + ", " +
+                    "'" + reservation.getPersonTelephoneNumber() + "')";
 
-        statement.execute(sqlStatement);
+            statement.execute(sqlStatement);
 
-    } catch (SQLException exception) {
-        System.out.println("Error: " + exception);
+        } catch (SQLException exception) {
+            System.out.println("Error: " + exception);
+        }
     }
-}
 
+    public ArrayList<Reservation> getAvailableReservations (int tableId, String date, int numberOfSeats) { //prints all reservations for specific table and date
 
+        ArrayList<Reservation> reservationList = new ArrayList<Reservation>();
+
+        try {
+
+            Statement statement = conn.createStatement();
+            //how can we order the result by time??????????????????????????????????????
+            //and can we check that its not overlapping ??????????????????
+            String sqlStatement = "SELECT * FROM reservations WHERE ((table_id = " + tableId + " ) AND (date = '" + date + "'))";
+
+            ResultSet rs = statement.executeQuery(sqlStatement);
+            String newTime= null;
+            int counter = 0;//for printing message only one time
+            while (rs.next()) {
+                if (counter == 0){
+                    System.out.println("Table number " + tableId + " with " + numberOfSeats + " number of seats for date " + date + " has such reservations: ");
+                }
+                counter++; //becomes 1 and more, so it wont print the message above any more
+                //creates reservation for printing
+                Reservation reservation = new Reservation();
+                newTime = rs.getString("time");
+                reservation.setTime(LocalTime.parse(newTime));
+                reservation.setReservationHours(rs.getInt("reservation_duration"));
+                reservationList.add(reservation);
+                System.out.println("From " + reservation.getTime() + " for " + reservation.getReservationHours() + " hours.");
+            }
+
+        } catch (SQLException exception) {
+            System.out.println("Error: " + exception);
+        }
+        return reservationList;
+    }
 
 }

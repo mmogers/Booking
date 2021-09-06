@@ -3,31 +3,30 @@ import java.util.ArrayList;
 public class Tables {
     private int tableID;
     private int numberOfSeats;
-    private ArrayList<Reservation> reservationForTable = new ArrayList<>();
+    //private ArrayList<Reservation> reservationForTable = new ArrayList<>();
 
 
     public Tables() {
     }
 
-    public Tables(int tableID, int numberOfSeats, ArrayList<Reservation> reservationForTable) {
+    public Tables(int tableID, int numberOfSeats) {
         this.tableID = tableID;
         this.numberOfSeats = numberOfSeats;
-        //this.restaurantID = restaurantID;
-        this.reservationForTable = reservationForTable;
     }
-    public boolean addNewReservation(Reservation reservation) {
+
+    /*public boolean addNewReservation(Reservation reservation) {
         return reservationForTable.add(reservation);
     }
     public Reservation removeReservation(int index) {
         return reservationForTable.remove(index);
-    }
+    }*/
 
     @Override
     public String toString() {
         return "Tables{" +
                 "tableID=" + tableID +
                 ", numberOfSeats=" + numberOfSeats +
-                ", reservationForTable=" + reservationForTable +
+               // ", reservationForTable=" + reservationForTable +
                 '}';
     }
 
@@ -55,11 +54,11 @@ public class Tables {
         this.restaurantID = restaurantID;
     }*/
 
-    public ArrayList<Reservation> getReservationForTable() {
+    /*public ArrayList<Reservation> getReservationForTable() {
         return reservationForTable;
     }
 
     public void setReservationForTable(ArrayList<Reservation> reservationForTable) {
         this.reservationForTable = reservationForTable;
-    }
+    }*/
 }
