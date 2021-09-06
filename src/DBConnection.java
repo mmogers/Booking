@@ -193,7 +193,7 @@ public class DBConnection {
             Statement statement = conn.createStatement();
             //how can we order the result by time??????????????????????????????????????
             //and can we check that its not overlapping ??????????????????
-            String sqlStatement = "SELECT * FROM reservations WHERE ((table_id = " + tableId + " ) AND (date = '" + date + "'))";
+            String sqlStatement = "SELECT * FROM reservations WHERE ((table_id = " + tableId + " ) AND (date = '" + date + "')) ORDER BY time ASC";
 
             ResultSet rs = statement.executeQuery(sqlStatement);
             String newTime= null;
