@@ -259,6 +259,7 @@ public class DBConnection {
             int counter = 0;//for printing message only one time
             while (rs.next()) {
                 if (counter == 0){
+                    System.out.println("___________________________________________________________________________");
                     System.out.println("Table number " + tableId + " with " + numberOfSeats + " number of seats for date " + date + " has such reservations: ");
                 }
                 counter++; //becomes 1 and more, so it wont print the message above any more
@@ -290,11 +291,11 @@ public class DBConnection {
         try {
 
             Statement statement = conn.createStatement();
-            String sqlStatement = "SELECT * FROM reservations WHERE ((table_id = " + tableId + " ) AND (date > '" + date + "')) ORDER BY date , time ASC";
+            String sqlStatement = "SELECT * FROM reservations WHERE ((table_id = " + tableId + " ) AND (date >= '" + date + "')) ORDER BY date , time ASC";
 
             ResultSet rs = statement.executeQuery(sqlStatement);
             String newTime= null;
-int counter= 0;
+            int counter= 0;
             while (rs.next()) {
 
                 //creates reservation for printing
@@ -317,7 +318,53 @@ int counter= 0;
                  //System.out.println("It will last till " + tillH + ":00");
 
             }
-            System.out.println("NONE");
+            System.out.println();
+            if(counter == 0) {
+                System.out.println("NONE");
+            }
+        } catch (SQLException exception) {
+            System.out.println("Error: " + exception);
+        }
+        return reservationList;
+    }
+
+    public ArrayList<Reservation> getPendingReservationsNoPrint (int tableId, String date) { //prints all reservations for specific table and after the current date
+
+        ArrayList<Reservation> reservationList = new ArrayList<Reservation>();
+
+        try {
+
+            Statement statement = conn.createStatement();
+            String sqlStatement = "SELECT * FROM reservations WHERE ((table_id = " + tableId + " ) AND (date >= '" + date + "')) ORDER BY date , time ASC";
+
+            ResultSet rs = statement.executeQuery(sqlStatement);
+            String newTime= null;
+            int counter= 0;
+            while (rs.next()) {
+
+                //creates reservation for printing
+                Reservation reservation = new Reservation();
+                newTime = rs.getString("time");
+                reservation.setTime(LocalTime.parse(newTime));
+                reservation.setReservationHours(rs.getInt("reservation_duration"));
+              /*  Date reservationDate = null;
+                reservationDate = rs.getDate("date");*/
+                reservation.setDate(LocalDate.parse(rs.getString("date")));
+                reservationList.add(reservation);
+                /*int till = 0;
+                till = reservation.getTime().getHour() + reservation.getReservationHours();*/
+                reservationList.add(reservation);
+                /*if (counter == 0){ //to print from the next line - more beautiful code
+                    System.out.println();
+                }*/
+                //System.out.println("For " + reservation.getDate() + " From " + reservation.getTime() + " till  " + till + ":00. ");
+                counter++;
+                //System.out.println("It will last till " + tillH + ":00");
+
+            }
+            if(counter == 0) {
+                //System.out.println("NONE");
+            }
         } catch (SQLException exception) {
             System.out.println("Error: " + exception);
         }
@@ -326,9 +373,18 @@ int counter= 0;
 
     public boolean reservationOverlappingCheck (ArrayList<Reservation> listOfReservations, String time, int reservationHours){
         int startTime = LocalTime.parse(time).getHour();
-        //System.out.println("start time " + startTime);
+        System.out.println("start time " + startTime);
         int endTime = startTime + reservationHours;
-        //System.out.println("end time " + endTime);
+        System.out.println("end time " + endTime);
+        //check 10:00-23:00
+        /*if (startTime < 11){
+            System.out.println("Sorry we are still closed this time.");
+            System.out.println("We are opening at 11:00");
+            return false;
+        } else if (endTime>23){
+            System.out.println("Sorry we are closing at 23:00");
+            return false;
+        }*/
         for (Reservation reservation: listOfReservations){
             int startReservationTime = reservation.getTime().getHour();
             //System.out.println("end time " + startReservationTime);
@@ -336,7 +392,7 @@ int counter= 0;
            // System.out.println("end time " + endReservationTime);
             if((startReservationTime < startTime) && (endReservationTime > startTime)  || (startReservationTime>startTime && endReservationTime < endTime) || (startReservationTime < endTime && endReservationTime > endTime)){
                 System.out.println("This time is overlapping with reservation : [" + startReservationTime + ":00 - " + endReservationTime + ":00] for this table.");
-                System.out.println(" Please book another table, or choose another time");
+                System.out.println("Please book another table, or choose another time");
                 System.out.println("************************************************************");
                 return false;
             }
