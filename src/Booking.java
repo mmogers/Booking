@@ -42,21 +42,24 @@ public class Booking {
         // Class: Person (name, phone number, number of people, table ID, date and time)
         // Class: Reservation
 
-        ArrayList<Tables> listOfTables = new ArrayList<>();
-        ArrayList<Person> listOfPersons = new ArrayList<>();
-        //update existing data from db - for loop and also for every table - array of reservations
+        /*ArrayList<Tables> listOfTables = new ArrayList<>();
+        ArrayList<Person> listOfPersons = new ArrayList<>();*/
+
 
         int menuEntry;
         Scanner scanner = new Scanner(System.in);
-        int numberOfTables = 0;//for add and remove functions - table id, that will be incremented every time when adding new tablw
-        int numberOfReservations = 0; // the same for reservations
+        /*int numberOfTables = 0;//for add and remove functions - table id, that will be incremented every time when adding new tablw
+        int numberOfReservations = 0; // the same for reservations*/
         do {
             // EXIT == 0
+            System.out.println("************************************************************");
             System.out.println("Welcome to table booking system!");
+            System.out.println("************************************************************");
             System.out.println("Please select :");
             System.out.println("1 - An owner of the restaurant");
             System.out.println("2 - A user");
             System.out.println("0 - Exit");
+            System.out.println("************************************************************");
             menuEntry = scanner.nextInt();
 
             switch (menuEntry) {
@@ -69,12 +72,14 @@ public class Booking {
                     if (pin.matches("1111")) {
                         int entry;
                         do {
+                            System.out.println("************************************************************");
                             System.out.println("Please select :");
                             System.out.println("1 - Show the list of tables ");
                             System.out.println("2 - Add a table ");
-                            System.out.println("3 - Delete a table  ");
-                            System.out.println("4 - Clean old irrelevant reservations, and customers data  ");//clean old
+                            System.out.println("3 - Delete a table ");
+                            System.out.println("4 - Show all reservations ");//clean old
                             System.out.println("0 - Exit");
+                            System.out.println("************************************************************");
                             Tables newTable = new Tables();
                             entry = scanner.nextInt();
                             switch (entry) {
@@ -86,36 +91,65 @@ public class Booking {
                                     break;
                                 case 2:
                                     // add a table
-                                    //db+array
-
-                                    numberOfTables++;
                                     System.out.println("Please add number of seats for the table :");
-                                    //newTable.setNumberOfSeats(scanner.nextInt());
-                                    //newTable.setTableID(numberOfTables);
-                                    //ArrayList<Reservation> reservationsForTable = new ArrayList<>();
-                                    //newTable.setReservationForTable(reservationsForTable);
-                                    //listOfTables.add(newTable);
                                     int numberOfSeats = 0;
                                     numberOfSeats = checkInputInt(numberOfSeats);
                                     newTable.setNumberOfSeats(numberOfSeats);
                                     bookingDb.createTable(newTable);
+                                    System.out.println("The table with " + numberOfSeats + " seats was created!");
                                     break;
-                                case 3: //check if there are no reservations for the table
+                                case 3:
                                     //delete a table
-                                    System.out.println("Please write ID of the table to be deleted:");
+                                    System.out.println("Please write ID of the table you want to delete:");
                                     int numberToDelete = scanner.nextInt();
-
-                                    bookingDb.deleteTable(numberToDelete);
+                                    //System.out.println("Please enter current date in format YYYY-MM-DD: ");
+                                    //String currentDate = scanner.next();
+                                    boolean wrongDateFormat = false;
+                                    String currentDate = null;
+                                    do {
+                                        wrongDateFormat = false;
+                                        System.out.println("Please enter current date in format YYYY-MM-DD: ");
+                                         currentDate = scanner.next();
+                                        try {
+                                            LocalDate newCurrentDate = LocalDate.parse(currentDate);
+                                        } catch (DateTimeParseException e) {
+                                            wrongDateFormat = true;
+                                            System.out.println("The input is invalid , please enter one more time. ");
+                                        }
+                                    }while (wrongDateFormat == true);
+                                    //check pending reservations
+                                    ArrayList<Reservation> pendingReservations = new ArrayList<>();
+                                    pendingReservations = bookingDb.getPendingReservations(numberToDelete, currentDate);
+                                    if(pendingReservations.size() > 0){
+                                        System.out.println("The table cannot be deleted, it has pending reservations!");
+                                    }else {
+                                        bookingDb.deleteTable(numberToDelete);
+                                        System.out.println("The table " + numberToDelete + " was deleted!");
+                                    }
                                     break;
-                                case 4: // may be we dont need this item at all
-                                    String targetDate;
-                                    System.out.println("Please enter the target date . Up to which all the data will be delete in format YYYY-MM-DD: ");
-                                    targetDate = scanner.next();
-                                    LocalDate newTargetDate = LocalDate.parse(targetDate);//from string to LocalDate
-                                    //clean old
-                                    //clean in db
-                                    //update all 3 arrays
-                                    System.out.println("Irrelevant data was cleaned!");
+                                case 4: // SHOW ALL RESERVATIONS
+                                    wrongDateFormat = false;
+                                    currentDate = null;
+                                    do {
+                                        wrongDateFormat = false;
+                                        System.out.println("Please enter current date in format YYYY-MM-DD: ");
+                                        currentDate = scanner.next();
+                                        try {
+                                            LocalDate newCurrentDate = LocalDate.parse(currentDate);
+                                        } catch (DateTimeParseException e) {
+                                            wrongDateFormat = true;
+                                            System.out.println("The input is invalid , please enter one more time. ");
+                                        }
+                                    }while (wrongDateFormat == true);
+                                    ArrayList<Tables> allTables = new ArrayList<>();
+                                    allTables = bookingDb.getTablesNoPrint();
+                                    for (Tables table : allTables){
+                                        ArrayList<Reservation> reservations = new ArrayList<>();
+
+                                        System.out.print("Reservations for table " + table.getTableID() + " are: ");
+                                        reservations = bookingDb.getPendingReservations(table.getTableID(), currentDate);
+                                       // System.out.println(reservations);
+                                    }
                                     break;
                                 default:
                                     if (entry == 0) {
@@ -205,7 +239,7 @@ public class Booking {
                                 break;
                             case 2:
                                 //book a table - change db, arrays
-                                numberOfReservations++;
+                                //numberOfReservations++;
                                 System.out.println("Please enter your name: "); //  check that its a name - a-zA-Z
                                 String name = scanner.next();
                                 System.out.println("How many persons you are: "); //check that its a positive number, not 0
@@ -254,10 +288,9 @@ public class Booking {
                     } while (userEntry != 0);
                     break;
                 default:
-                    /*if (menuEntry != 0) {// to check that the first input is not 0 - do while loop)
-                        System.out.println("Menu item does not exist"); //prints when not needed- check
-                    }*/
-                    System.out.println("Menu item does not exist");
+                    if (menuEntry != 0) {// to check that the first input is not 0 - do while loop)
+                        System.out.println("Menu item does not exist");
+                    }
             }
         } while (menuEntry != 0);
     }

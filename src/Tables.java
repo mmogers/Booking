@@ -14,20 +14,12 @@ public class Tables {
         this.numberOfSeats = numberOfSeats;
     }
 
-    /*public boolean addNewReservation(Reservation reservation) {
-        return reservationForTable.add(reservation);
-    }
-    public Reservation removeReservation(int index) {
-        return reservationForTable.remove(index);
-    }*/
 
     @Override
     public String toString() {
-        return "Tables{" +
-                "tableID=" + tableID +
-                ", numberOfSeats=" + numberOfSeats +
-               // ", reservationForTable=" + reservationForTable +
-                '}';
+        return "Table {" +
+                "ID = " + tableID +
+                " with " + numberOfSeats + " seats }";
     }
 
     public int getTableID() {

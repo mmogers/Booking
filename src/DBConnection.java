@@ -1,5 +1,6 @@
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 
@@ -142,6 +143,35 @@ public class DBConnection {
         return tableList;
     }
 
+    public ArrayList<Tables> getTablesNoPrint() { //prints out all heroes from database, but doesn't add heroes to ArrayList
+
+        ArrayList<Tables> tableList = new ArrayList<Tables>();
+
+        try {
+
+            Statement statement = conn.createStatement();
+            String sqlStatement = "SELECT * FROM tables";
+
+            ResultSet rs = statement.executeQuery(sqlStatement);
+
+            while (rs.next()) {
+
+                // Create new Hero object + push all the tables
+                Tables table = new Tables();
+                table.setTableID(rs.getInt("id"));
+                table.setNumberOfSeats(rs.getInt("number_of_seats"));
+                tableList.add(table);
+                //System.out.println(table.toString());
+            }
+
+
+        } catch (SQLException exception) {
+            System.out.println("Error: " + exception);
+        }
+
+        return tableList;
+    }
+
     //PERSON
     public void createPerson(Person person) { //creates a row in db-persons from Person class
 
@@ -209,7 +239,12 @@ public class DBConnection {
                 reservation.setTime(LocalTime.parse(newTime));
                 reservation.setReservationHours(rs.getInt("reservation_duration"));
                 reservationList.add(reservation);
-                System.out.println("From " + reservation.getTime() + " for " + reservation.getReservationHours() + " hours.");
+                int till = 0;
+                till = reservation.getTime().getHour() + reservation.getReservationHours();
+
+
+                System.out.println("From " + reservation.getTime() + " till  "  + till + ":00. ");
+                //System.out.println("It will last till " + tillH + ":00");
             }
 
         } catch (SQLException exception) {
@@ -218,4 +253,45 @@ public class DBConnection {
         return reservationList;
     }
 
+
+    public ArrayList<Reservation> getPendingReservations (int tableId, String date) { //prints all reservations for specific table and after the current date
+
+        ArrayList<Reservation> reservationList = new ArrayList<Reservation>();
+
+        try {
+
+            Statement statement = conn.createStatement();
+            String sqlStatement = "SELECT * FROM reservations WHERE ((table_id = " + tableId + " ) AND (date > '" + date + "')) ORDER BY date , time ASC";
+
+            ResultSet rs = statement.executeQuery(sqlStatement);
+            String newTime= null;
+int counter= 0;
+            while (rs.next()) {
+
+                //creates reservation for printing
+                Reservation reservation = new Reservation();
+                newTime = rs.getString("time");
+                reservation.setTime(LocalTime.parse(newTime));
+                reservation.setReservationHours(rs.getInt("reservation_duration"));
+              /*  Date reservationDate = null;
+                reservationDate = rs.getDate("date");*/
+                reservation.setDate(LocalDate.parse(rs.getString("date")));
+                reservationList.add(reservation);
+                int till = 0;
+                till = reservation.getTime().getHour() + reservation.getReservationHours();
+                reservationList.add(reservation);
+                if (counter == 0){ //to print from the next line - more beautiful code
+                    System.out.println();
+                }
+                 System.out.println("For " + reservation.getDate() + " From " + reservation.getTime() + " till  " + till + ":00. ");
+                counter++;
+                 //System.out.println("It will last till " + tillH + ":00");
+
+            }
+            System.out.println("NONE");
+        } catch (SQLException exception) {
+            System.out.println("Error: " + exception);
+        }
+        return reservationList;
+    }
 }
