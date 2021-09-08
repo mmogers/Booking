@@ -132,7 +132,7 @@ public class Booking {
                                     currentDate = null;
                                     do {
                                         wrongDateFormat = false;
-                                        System.out.println("Please enter current date in format YYYY-MM-DD: ");
+                                        System.out.println("Please enter current date in format YYYY-MM-DD to see all the future reservations: ");
                                         currentDate = scanner.next();
                                         try {
                                             LocalDate newCurrentDate = LocalDate.parse(currentDate);
@@ -249,18 +249,50 @@ public class Booking {
                                 System.out.println("Please enter your phone number in format: XXXXXXXX: ");//empty line??????//check that it matches [0-9]*
                                 String phoneNumber = null;
                                 phoneNumber = checkInputPhoneNr(phoneNumber);
-                                System.out.println("Please select a date in format YYYY-MM-DD :");//check the format is correct
-                                date = scanner.next();
+                                //System.out.println("Please select a date in format YYYY-MM-DD :");//check the format is correct
+                                //date = scanner.next();
+                                 wrongDateFormat = false;
+                                do {
+                                    wrongDateFormat = false;
+                                    System.out.println("Please select a date in format YYYY-MM-DD :");
+                                    date = scanner.next();
+                                    try {
+                                        LocalDate newDate = LocalDate.parse(date);
+                                    } catch (DateTimeParseException e) {
+                                        wrongDateFormat = true;
+                                        System.out.println("The input is invalid , please enter one more time. ");
+                                    }
+                                }while (wrongDateFormat == true);
 
                                 System.out.println("Please select a time in format HH:MM :"); //check the format is correct, time more than 11:00 and less than 23:00
                                 time = scanner.next();
                                 System.out.println("How many hours do you want your reservation to last? ");//check the input ans that time plus hours not more than 23:00,
                                 reservationHours = scanner.nextInt();
-                                System.out.println("Please enter the table id, of the table you've chosen: ");//an option to check available tables for the specific time
-                                int tableID = scanner.nextInt();
+
+                                //check if this table exists
+                                boolean tableExists = false;
+                                int tableID = 0;
+                                do {
+                                    System.out.println("Please enter the table id, of the table you've chosen: ");
+                                     tableID = scanner.nextInt();
+                                    Tables newTable = bookingDb.tableExists(tableID);
+                                    if (newTable.getTableID() == 0){
+                                        System.out.println("There is no table with such Id. ");
+                                    }else {
+                                        tableExists = true;
+                                    }
+                                }while (!tableExists);
+
 
                                 LocalTime newTime = LocalTime.parse(time);
                                 LocalDate newDate = LocalDate.parse(date);
+                                //check overlapping
+
+                                ArrayList<Reservation> listOfReservations = new ArrayList<>();
+                                listOfReservations = bookingDb.getAvailableReservationsNoPrinting(tableID, date, numberOfPersons);
+                                if ((bookingDb.reservationOverlappingCheck(listOfReservations, time, reservationHours)) == false){
+                                    continue;
+                                }
 
 
                                 // add a reservation to a table id
