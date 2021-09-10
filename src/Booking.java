@@ -1,13 +1,7 @@
 
-//if the number of people is too big sout - no such a big table
-//check the booking time from 11:00 - 23:00
 
 
-
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+//program description
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -18,11 +12,6 @@ import java.util.GregorianCalendar;
 import java.util.Scanner;
 
 
-
-//the program should start frm the owner - he needs to add tables, than , everything else is available
-//not written code for clean-up from the owner ,
-// and see all tables available for the customers as of date and time - I think maybe it will be easier to do from db
-
 public class Booking {
 
     private static DBConnection bookingDb;
@@ -31,47 +20,44 @@ public class Booking {
 
         bookingDb = new DBConnection();
 
-        //1. Owner side (what he can do - add, delete tables/seats, delete booking). 3 options
-        //2. User side ( to book a table; to see reservations according to specific date and time) 2. options
 
-        // Class: Main (switches 1. ar you an owner/user 2.depends on )
-        // Class: Restaurant(with all the tables);
-        // Class: Tables ( with table ID, number of seats, array of reservations, date and time)
-        // Class: Person (name, phone number, number of people, table ID, date and time)
-        // Class: Reservation
-
-        /*ArrayList<Tables> listOfTables = new ArrayList<>();
-        ArrayList<Person> listOfPersons = new ArrayList<>();*/
-
-
-        int menuEntry;
+        int menuEntry = 10;
+        String menuEntry0;
         Scanner scanner = new Scanner(System.in);
-        /*int numberOfTables = 0;//for add and remove functions - table id, that will be incremented every time when adding new tablw
-        int numberOfReservations = 0; // the same for reservations*/
+
         do {
             // EXIT == 0
-            System.out.println("************************************************************");
+            System.out.println("********************");
             System.out.println("Welcome to table booking system!");
-            System.out.println("************************************************************");
+            System.out.println("********************");
             System.out.println("Please select :");
             System.out.println("1 - An owner of the restaurant");
-            System.out.println("2 - A customer");
+            System.out.println("2 - A user");
             System.out.println("0 - Exit");
-            System.out.println("************************************************************");
-            menuEntry = scanner.nextInt();
+            System.out.println("********************");
+
+
+            do {
+                menuEntry0 = scanner.next();
+                if (menuEntry0.matches("[0-2]")) {
+                    menuEntry = Integer.parseInt(menuEntry0);
+                    break;
+                }
+            } while (menuEntry0.matches("^[0-2]"));
+
 
             switch (menuEntry) {
                 case 1:
 //                  //an owner
                     String pin = null;
-                    System.out.println("Please enter your pin code XXXX (1111):");
+                    System.out.println("Please enter your pin code XXXX :");
                     pin = scanner.next();
 
                     if (pin.matches("1111")) {
-                        int entry;
+                        int entry=0;
                         do {
                             System.out.println("************************************************************");
-                            System.out.println("Please select :");
+                            System.out.println("Hello Owner!!! Please select :");
                             System.out.println("1 - Show the list of tables ");
                             System.out.println("2 - Add a table ");
                             System.out.println("3 - Delete a table ");
@@ -79,16 +65,24 @@ public class Booking {
                             System.out.println("0 - Exit");
                             System.out.println("************************************************************");
                             Tables newTable = new Tables();
-                            entry = scanner.nextInt();
+                          //  entry = scanner.nextInt();//check that its integer
+
+                            do {
+                                menuEntry0 = scanner.next();
+                                if (menuEntry0.matches("[0-4]")) {
+                                    entry = Integer.parseInt(menuEntry0);
+                                    break;
+                                }
+                            } while (menuEntry0.matches("^[0-4]"));
+
                             switch (entry) {
-                                case 1://show the list of tables - db
-                                    bookingDb.getTables();
-                                    /*for (Tables tab: listOfTables){
-                                        System.out.println(tab.toString());
-                                    }*/
+                                case 1:
+                                    //SHOW A LIST OF TABLES
+                                    boolean isPrintable = true;
+                                    bookingDb.getTables(isPrintable);
                                     break;
                                 case 2:
-                                    // add a table
+                                    // ADD A TABLE
                                     System.out.println("Please add number of seats for the table :");
                                     int numberOfSeats = 0;
                                     numberOfSeats = checkInputInt(numberOfSeats);
@@ -97,17 +91,14 @@ public class Booking {
                                     System.out.println("The table with " + numberOfSeats + " seats was created!");
                                     break;
                                 case 3:
-                                    //delete a table
+                                    //DELETE A TABLE
                                     System.out.println("Please write ID of the table you want to delete:");
                                     int numberToDelete = scanner.nextInt();
-                                    //System.out.println("Please enter current date in format YYYY-MM-DD: ");
-                                    //String currentDate = scanner.next();
                                     boolean wrongDateFormat = false;
                                     String currentDate = null;
                                     do {
                                         wrongDateFormat = false;
-                                        //System.out.println("Please enter current date in format YYYY-MM-DD: ");
-                                         currentDate = LocalDate.now().toString();
+                                        currentDate = LocalDate.now().toString();
                                         try {
                                             LocalDate newCurrentDate = LocalDate.parse(LocalDate.now().toString());
                                         } catch (DateTimeParseException e) {
@@ -115,12 +106,14 @@ public class Booking {
                                             System.out.println("The input is invalid , please enter one more time. ");
                                         }
                                     }while (wrongDateFormat == true);
-                                    //check pending reservations
+                                    //check future reservations
                                     ArrayList<Reservation> pendingReservations = new ArrayList<>();
-                                    pendingReservations = bookingDb.getPendingReservationsNoPrint(numberToDelete, currentDate);
+                                    isPrintable = false;
+                                    pendingReservations = bookingDb.getPendingReservations(numberToDelete, currentDate, isPrintable);
                                     if(pendingReservations.size() > 0){
                                         System.out.println("The table cannot be deleted, it has pending reservations:");
-                                        pendingReservations = bookingDb.getPendingReservations(numberToDelete, currentDate);
+                                        isPrintable = true;
+                                        pendingReservations = bookingDb.getPendingReservations(numberToDelete, currentDate, isPrintable);
                                     }else {
                                         bookingDb.deleteTable(numberToDelete);
                                         System.out.println("The table " + numberToDelete + " was deleted!");
@@ -131,8 +124,6 @@ public class Booking {
                                     currentDate = null;
                                     do {
                                         wrongDateFormat = false;
-                                        //System.out.println("Please enter current date in format YYYY-MM-DD to see all the future reservations: ");
-                                        //currentDate = scanner.next();
                                         currentDate = LocalDate.now().toString();
                                         try {
                                             LocalDate newCurrentDate = LocalDate.parse(currentDate);
@@ -142,22 +133,20 @@ public class Booking {
                                         }
                                     }while (wrongDateFormat == true);
                                     ArrayList<Tables> allTables = new ArrayList<>();
-                                    allTables = bookingDb.getTablesNoPrint();
+                                    isPrintable = false;
+                                    allTables = bookingDb.getTables(isPrintable);
                                     for (Tables table : allTables){
                                         ArrayList<Reservation> reservations = new ArrayList<>();
-                                        System.out.println("___________________________________________________");
-                                        System.out.print("Reservations for table " + table.getTableID() + " are: ");
-                                        reservations = bookingDb.getPendingReservations(table.getTableID(), currentDate);
-                                       // System.out.println(reservations);
+                                        System.out.println("----------------------------------------");
+                                        System.out.print("Reservations for table " + table.getTableID() + " with " + table.getNumberOfSeats() + " seats are: ");
+                                        isPrintable = true;
+                                        reservations = bookingDb.getPendingReservations(table.getTableID(), currentDate, isPrintable);
                                     }
                                     break;
                                 default:
-                                    if (entry == 0) {
-                                        continue;
-                                    } else {
-                                        System.out.println("Menu item does not exist");
-                                        System.out.println();
-                                    }
+//
+                                    System.out.println("Menu item does not exist");
+
                             }
                         } while (entry != 0);
                     } else {
@@ -167,8 +156,8 @@ public class Booking {
                     }
                     break;
                 case 2:
-                    // USER
-                    int userEntry;
+                    // CUSTOMER PART
+                    int userEntry=0;
                     do {
                         System.out.println();
                         System.out.println("Please select what do you want to do:");
@@ -177,14 +166,23 @@ public class Booking {
                         System.out.println("0 - Exit");
                         System.out.println("************************************************************");
 
-                        userEntry = scanner.nextInt();
+
+                        do {
+                            menuEntry0 = scanner.next();
+                            if (menuEntry0.matches("[0-2]")) {
+                                userEntry = Integer.parseInt(menuEntry0);
+                                break;
+                            }
+                        } while (menuEntry0.matches("^[0-2]"));
+
+
+
+                       // userEntry = scanner.nextInt(); // check its int
                         switch (userEntry) {
-                            case 1: //see available tables , compare LocalDates
-                                //COMPLICATED, SHOULD BE DONE IN DATABASE , NOT CHANGING ANYTHING JUST PRINTING OUT
-                                //see available tables
-                                // entering data - number of persons
-                                String date = null; //maybe to move to case 2?
-                                String time = null; // maybe to move to case 2?
+                            case 1:
+                                // SEE ALL AVAILABLE TABLES FOR SPECIFIC NUMBER OF PERSONS
+                                String date = null;
+                                String time = null;
                                 int numberOfPersons = 0;
                                 int reservationHours = 0;
 
@@ -207,6 +205,7 @@ public class Booking {
                                 numberOfPersons = checkInputInt(numberOfPersons); //scanner inside
                                 ArrayList<Tables> availableTables = new ArrayList<>();
                                 availableTables = bookingDb.getAvailableTables(numberOfPersons);
+
                                 int tableId = 0;
                                 ArrayList<Reservation> reservationsForTable = new ArrayList<>();
                                 for (Tables table : availableTables) {
@@ -220,7 +219,7 @@ public class Booking {
 
                                 break;
                             case 2:
-                                //book a table
+                                //BOOK A TABLE
 
                                 System.out.println("Please enter your name: "); //  check that its a name - a-zA-Z
                                 String name = scanner.next();
@@ -231,10 +230,7 @@ public class Booking {
                                 String phoneNumber = null;
                                 phoneNumber = checkInputPhoneNr(phoneNumber);
 
-                                //
-                                //
-                                //
-                                //DATE CHECK
+                                //date check - cannot be in the past
                                boolean wrongDateFormat1 = false;
                                 boolean i = false;
                                  wrongDateFormat = false;
@@ -255,14 +251,13 @@ public class Booking {
                                  }while (i == true);
                                 LocalDate newDate = LocalDate.parse(date);
 
-
                                 System.out.println("The restaurant is working from 11:00 till 23:00.");
                                 System.out.println("Please select a time in format HH:MM :");//check the format is correct, time more than 11:00 and less than 23:00
 
-
-                                //time = scanner.next();
                                 time = null;
-                                LocalTime newTime = LocalTime.parse(checkInputTime(time));
+                                time = checkInputTime(time); //time
+
+                                LocalTime newTime = LocalTime.parse(time);
 
                                 System.out.println("How many hours do you want your reservation to last? ");//check the input ans that time plus hours not more than 23:00,
                                 reservationHours = scanner.nextInt();
@@ -276,9 +271,9 @@ public class Booking {
                                 reservationsForTable = new ArrayList<>();
                                 for (Tables table : availableTables) {
                                     tableId = table.getTableID();
-                                    reservationsForTable = bookingDb.getAvailableReservations(tableId, date.toString(), table.getNumberOfSeats());
+                                    reservationsForTable = bookingDb.getAvailableReservations(tableId, date, table.getNumberOfSeats());
                                     if (reservationsForTable.size() == 0) {
-                                        System.out.println("______________________________________________________________________");
+                                        System.out.println("----------------------------------------");
                                         System.out.println("Table number " + table.getTableID() + " with " + table.getNumberOfSeats() + " number of seats has no reservations for this date");
                                     }
                                 }
@@ -300,15 +295,15 @@ public class Booking {
 
                                  newTime = LocalTime.parse(time);
                                  newDate = LocalDate.parse(date);
-                                //check overlapping
 
+                                //check overlapping
                                 ArrayList<Reservation> listOfReservations = new ArrayList<>();
+
                                 listOfReservations = bookingDb.getAvailableReservationsNoPrinting(tableID, date, numberOfPersons);
 
-                                if ((bookingDb.reservationOverlappingCheck(listOfReservations, time, reservationHours)) == false){
+                                if (!(bookingDb.reservationOverlappingCheck(listOfReservations, time, reservationHours))){
                                     continue;
                                 }
-
 
                                 // add a reservation to a table id
                                 Person newPerson = new Person(); //creating a person that will be transferred to db
@@ -331,6 +326,7 @@ public class Booking {
                                 System.out.println("Your reservation was recorded successfully!");
                                 break;
                             default:
+                                System.out.println("The input is invalid, please try again");
                         }
                     } while (userEntry != 0);
                     break;
@@ -342,7 +338,7 @@ public class Booking {
         } while (menuEntry != 0);
     }
 
-    private static int checkInputInt(int check1) { //to check for 0 and positive
+    private static int checkInputInt(int check1) {
         Scanner sc = new Scanner(System.in);
         String check0;
         check1 = 0;
@@ -369,10 +365,9 @@ public class Booking {
         return checkNr1;
     }
 
-
-
   private static String checkInputTime (String time) {
       Scanner sc = new Scanner(System.in);
+
       do {
           time = sc.next();
           if (time.matches("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")) {
@@ -383,7 +378,7 @@ public class Booking {
       return time;
   }
 
-    private static boolean checkDatesFuture(LocalDate newDate0) {
+/*    private static boolean checkDatesFuture(LocalDate newDate0) {
         boolean i = false;
         GregorianCalendar gc = GregorianCalendar.from(newDate0.atStartOfDay(ZoneId.systemDefault()));
         Calendar d0 = new GregorianCalendar();
@@ -397,9 +392,19 @@ public class Booking {
             System.out.println("Please enter a date after today " + LocalDate.now() + " and before " + futureDate + ": ");
         };
         return i;
+    }*/
+
+    private static boolean checkDatesFuture(LocalDate newDate0) {
+        boolean i = false;
+        LocalDate futureDate = LocalDate.now().plusMonths(6);
+        if (newDate0.isAfter(LocalDate.now()) && newDate0.isBefore(futureDate)) {
+            i = false;
+        }
+        else {
+            i = true;
+            System.out.println("Please enter a date after today " + LocalDate.now() + " and before " + futureDate + ": ");
+        }
+        return i;
     }
-
-
-
 
 }
